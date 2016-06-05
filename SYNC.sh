@@ -96,14 +96,14 @@ function client {
 }
 
 function backup {
-	test=$(find $HOME -name '*.old' -maxdepth $MAXDEPTH ! -path $HOME'/.config' ! -path $HOME'/.cache' ! -path $HOME'/.cache*' ! -path $HERE ! -path $HERE'*')
-	options=$( printf '%s\n' "${test[@]}"  | awk '{print $1, "on"}')
+	test=$(find $HOME -name '*.old' )
+	options=$( find . -maxdepth 1  | awk '{print $1}')
 	cmd=(dialog --stdout --no-items \
 	        --separate-output \
 	        --ok-label "Delete" \
 	        --checklist "Select options:" 22 306 16)
 	choices=$("${cmd[@]}" ${options})
+
+	dialog --title " Item(s) selected " --msgbox "${choices[@]}" 6 44
 }
-while true; do
 	menu
-done
