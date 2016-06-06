@@ -1,12 +1,12 @@
 #!/bin/bash
 
 
-IFS=$'\n'
+#IFS=$'\n'
 
 
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 HOME=$( readlink -f ~ )
-MAXDEPTH=3
+MAXDEPTH=2
 
 # I. Get List of Dotfiles
 
@@ -14,96 +14,178 @@ MAXDEPTH=3
 function find_dotfiles {
 	echo "$( find $1 -maxdepth $MAXDEPTH ! -name '*.old' ! -path $1'/.config' ! -path $1'/.cache' ! -path $1'/.cache*' ! -path $2 ! -path $2'*' | grep $1'[/]*\.[^.].*' )"
 }
-function find_oldfiles {
-	echo "$( find $HOME -maxdepth $MAXDEPTH ! -name '*.old' ! -path $1'/.config' ! -path $1'/.cache' ! -path $1'/.cache*' ! -path $HERE ! -path $HERE'*' | grep $1'[/]*\.[^.].*' )"
-}
 
 _temp="/tmp/answer.$$"
 
 function menu {
-	menuitem=$(dialog --backtitle "SYNC.sh - Manage your dotfiles" --title " Main Menu "\
+	menuitem=$(\ 
+				dialog --backtitle "SYNC.sh - Manage your dotfiles" --title " Main Menu "\
 		        --no-cancel \
 		        --menu "Move using [UP] [DOWN], [Enter] to select" 17 60 10\
-		        Host "Auswählen der lokalen Dotfiles zum Hochladen"\
-		        Client "Auswählen der nicht-lokalen Dofiles zum Ersetzen (Automatisches Backup als *.old)"\
-		        Backup "Backup-Dateien (*.old) können hier erstellt und gelöscht werden."\
-		        Update "Lokale Symlinks aktualisieren"\
-		        Info "Lokale Symlinks aktualisieren"\
-		        Quit "Script beenden" 2>&1 >/dev/tty)
+		        "Link" "Dotfiles auf diesem System verlinken"\
+		        "Add" "Lokale Dateien hinzufügen"\
+		        "GIT PULL" "git pull ausführen"\
+		        "GIT PUSH" "git push ausführen (Achtung!)"\
+		        "Backup" "Backup-Dateien verwalten"\
+		        "Quit" "Script beenden" \
+		        3>&1 1>&2 2>&3 3>&- \
+		      )
 
-        case $menuitem in
-			Host) echo "Bye";;
-			Client) client;;
-			Backup) backup;;
-			Info) echo "Bye";;
-			Update) echo "Bye";;
-			Quit) break;;
-		esac
+    case $menuitem in
+		"Link") client;;
+		"Add") host;;
+		"GIT PULL") dialog --title "Information" --msgbox "$(git pull)" 6 44;;
+		"GIT PUSH") git_push;;
+		"Backup") backup;;
+		"Quit") clear && break;;
+	esac
+
+	
+}
+function git_pull {
+	dialog --title "Information" --msgbox "$(git pull)" 6 44
+	
+}
+function git_push {
+	git add -A 
+	git commit -m 'SYNC.sh update'
+	git push
 }
 function client {
-	# Clone Git
-	dot_git_all="$(find_dotfiles $HERE $HERE'/.git')"
+	# Dateien aus $HERE finden
+	gitfiles=$(find $HERE -maxdepth $MAXDEPTH ! -path '*.git' ! -path $HERE'/.git*' | grep $HERE'[/]*\.[^.].*')
 
+	# Überprüfen, ob bereits verlinkt
 	options=()
-	selected=()
+	for i in ${gitfiles}; do
+		target=$HOME${i:${#HERE}}
 
-	n=1
-	for i in ${dot_git_all}
-	do
-		rel=${i:${#HERE}}
-		if [[ $(readlink "$HOME$rel") == "$HERE$rel" ]]
-		then
-			options+=($n $i "on")
-			c=rel
+		if [[ $(readlink $target) == $i ]]; then
+			options+=($i "on")
 		else
-			options+=($n $i "off")
+			options+=($i "off")
 		fi
-		n=$((n+1))
 	done
 
-	cmd=(dialog --separate-output --ok-label "Update" --checklist "Select options:" 22 76 16)
-	choices=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
+	# Falls keine Dateien gefunden wurden
+	if [[ ${gitfiles[0]} != "" ]]; then
+		# Auswählen lassen
+		cmd=(dialog --stdout --no-items \
+		        --separate-output \
+		        --ok-label "Choose" \
+		        --checklist "Select options:" 22 200 16 )
+		choices=$("${cmd[@]}" $(echo ${options[@]}))
 
+		# Ausgewählte neu verlinken
+		n=0
+		for i in ${choices}; do
+			target=$HOME${i:${#HERE}}
 
-	links=0
-	backup=0
-	for i in ${choices}
-	do
-		# Vorheriger, Aktuell selektierter Path
-		c=${options[$((1+(i-1)*3))]}
+			tmp=$(dirname $i)
+			parent=$HOME${tmp:${#HERE}}
 
-		# Relativer Path
-		rel=${c:${#HERE}}
+			if [[ $(readlink $parent) == "" ]] ; then
 
-		# Wenn nicht Datei in bereits verlinktem Ordner, bereits verlinkt -> nix; sonst -> LINK + Backup
-        test="$(readlink -f $(dirname $HOME$rel))"
+				# Erstelle Verzeichnis, falls nicht da
+				$(mkdir -p $parent)
 
-        tmp=$(dirname $HOME$rel)
-        if [[ "$(readlink -f $tmp)" == "$tmp" ]] && [[ $(readlink -f $HOME$rel) != $(readlink -f $HERE$rel) ]];then
-			if [[ -e "$HOME$rel" ]];then
-                if [[ -e "$HOME$rel".old ]]; then
-                    $(rm -r $HOME$rel'.old')
-                fi
-				$(mv -bfv "$HOME$rel" "$HOME$rel".old)
-				backup=$((backup+1))
+				# Wenn Lokale Datei kein Symlink
+				if [[ ! -L $target ]];then
+					# Lösche alte .old
+		            $(rm -rf $target'.old')
+
+		            # Verschiebe lokale nach .old
+		            $(mv -bfv $target $target.old)
+					
+					n=$((n+1))
+				fi
+
+				# Lösche Symlinks
+		        $(rm -rf $target)
+
+	            # Verlinke neu
+				$(ln -s $i $target)
+
 			fi
-			$(ln -s "$HERE$rel" "$HOME$rel")
-			links=$((links+1))
-		fi
+		done
+		echo ${options}
 
-	done
-	dialog --title " Item(s) selected " --msgbox "$links Datei(en) wurde(n) neu verlinkt.\n$backup Datei(en) wurde(n) als Backup gemerkt (*.old)." 6 44
+		dialog --title "Information" --msgbox "$n Dateien wurden neu verlinkt." 6 44
+	fi
 }
+function host {
+	# Dateien aus $HERE finden
+	options=$( find $HOME -maxdepth $MAXDEPTH ! -name '*.old' ! -path $HOME'/.config' ! -path $HOME'/.cache' ! -path $HOME'/.cache*' ! -path $HERE ! -path $HERE'*' | grep $HOME'[/]*\.[^.].*' | awk '{print $1, "off"}')
 
+	# Falls keine Dateien gefunden wurden
+	if [[ ${options[0]} != "" ]]; then
+		
+		# Auswählen lassen
+		choices=$(dialog --no-items \
+				         --ok-label "Choose" \
+				         --checklist "Select options:" 22 200 16 $options 3>&1 1>&2 2>&3 3>&-)
+
+		for i in ${choices}; do
+			dialog --title "Information" --msgbox "$i" 6 44
+		done
+
+	fi
+
+}
 function backup {
-	test=$(find $HOME -name '*.old' )
-	options=$( find . -maxdepth 1  | awk '{print $1}')
-	cmd=(dialog --stdout --no-items \
-	        --separate-output \
-	        --ok-label "Delete" \
-	        --checklist "Select options:" 22 306 16)
-	choices=$("${cmd[@]}" ${options})
+	options=$(find $HOME -maxdepth $MAXDEPTH -name '*.old' ! -path $HOME'/.config' ! -path $HOME'/.cache' ! -path $HOME'/.cache*' ! -path $HERE ! -path $HERE'*' | grep $1'[/]*\.[^.].*' | awk '{print $1, "on"}')
+	
+	# Falls keine Dateien gefunden wurden
+	if [[ ${options[0]} != "" ]]; then
 
-	dialog --title " Item(s) selected " --msgbox "${choices[@]}" 6 44
+		# Dateien auswählen
+		cmd=(dialog --stdout --no-items \
+		        --separate-output \
+		        --ok-label "Auswählen" \
+		        --checklist "Select options:" 22 200 16 )
+		choices=$("${cmd[@]}" $(echo ${options[@]}))
+		
+		# Option 1: Wiederherstellen
+		dialog --stdout --title "What to do?" \
+			  --backtitle "Backup-Verwaltung" \
+			  --yesno "Wollen Sie die ausgewählten Dateien wiederherstellen?" 7 60
+		
+		operation=$?
+
+		# Option 2: Löschen (Wenn nicht wiederherstellen)
+		if [[ $operation -eq 1 ]]; then
+			dialog --stdout --title "What to do?" \
+			  --backtitle "Backup-Verwaltung" \
+			  --yesno "Wollen Sie die ausgewählten Dateien löschen?" 7 60
+			operation=$?
+			if [[ $operation -eq 0 ]]; then
+				operation=1
+			else
+				operation=2
+			fi
+		fi
+		
+		# Ausführen
+		n=0
+		for i in ${choices}; do
+			if [[ $operation -eq 0 ]]; then
+				$(mv -bfv $i ${i::-4})
+			elif [[ $operation -eq 1 ]]; then
+				$(rm -r $i)
+			fi
+			n=$((n+1))
+		done
+
+		# Report
+		if [[ $operation -eq 0 ]]; then
+			dialog --title "Information" --msgbox "$n Dateien wurden wiederhergestellt." 6 44
+		elif [[ $operation -eq 1 ]]; then
+			dialog --title "Information" --msgbox "$n Dateien wurden gelöscht." 6 44
+		fi
+	fi
+	
 }
+
+while true; do
 	menu
+done
