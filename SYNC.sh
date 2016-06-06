@@ -50,6 +50,7 @@ function git_push {
 	clear
 	git add -A 
 	git commit -m 'SYNC.sh update'
+	git status
 	git push
 	dialog --title "Information" --msgbox "git push: Fertig!" 6 44
 }
