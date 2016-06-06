@@ -47,10 +47,11 @@ function git_pull {
 	
 }
 function git_push {
+	clear
 	git add -A 
 	git commit -m 'SYNC.sh update'
 	git push
-	dialog --title "Information" --msgbox "Done" 6 44
+	dialog --title "Information" --msgbox "git push: Fertig!" 6 44
 }
 function client {
 	# Dateien aus $HERE finden
