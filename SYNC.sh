@@ -50,6 +50,7 @@ function git_push {
 	git add -A 
 	git commit -m 'SYNC.sh update'
 	git push
+	dialog --title "Information" --msgbox "Done" 6 44
 }
 function client {
 	# Dateien aus $HERE finden
