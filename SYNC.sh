@@ -12,13 +12,13 @@
 HERE=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 HOME=$( readlink -f ~ )
 #EXECPTIONS=()
-MAXDEPTH=2
+MAXDEPTH=3
 
 WHITESPACE="\ \   "
-REGDOT="\/+\.[^.\ \   ][^\ \   ]*"
+REGDOT=/+\.[^. ][^ ]*
 
 
-if [[ $HOME =~ $s ]] || [[  $HERE =~ $s ]]; then
+if [[ $HOME =~ $WHITESPACE ]] || [[  $HERE =~ $WHITESPACE ]]; then
     echo "Menschen mit Whitespace in ihren Datei-/Ordnernamen verdienen dieses Script nicht!"
     exit
 fi
@@ -66,10 +66,13 @@ function git_push {
 function download {
     
     # Dateien aus $HERE finden
-	local files=$(find $HERE -maxdepth $MAXDEPTH ! -path '*.git' \
-                                                    ! -path $HERE'/.git*' \
-                                                    ! -name '*.old' \
-                                                    | grep $HERE$REGDOT)
+	local files=$(find $HERE -maxdepth $MAXDEPTH ! -type l \
+                                                 ! -path '*.git' \
+                                                 ! -path $HERE \
+                                                 ! -path $HERE'/.git*' \
+                                                 ! -name '*.old' \
+                                                 ! -name '*.swp' \
+                                                 | grep -E $HERE'/+\.[^. ][^ ]*')
 
 	# Überprüfen, ob bereits verlinkt
 	local options=()
@@ -77,7 +80,7 @@ function download {
 
 	    target=$HOME${i:${#HERE}}
 
-	    if [[ $(readlink $target) == $(readlink -f $i) ]]; then
+        if [[ $(readlink $target) == $(readlink -f $i) ]]; then
 		    options+=($i "on")
 	    else
 		    options+=($i "off")
@@ -86,8 +89,7 @@ function download {
     done
 
     local choices=$(dialog --no-items \
-                           --checklist "Select options:" 22 200 16 ${options[@]} \
-                           3>&1 1>&2 2>&3 3>&-)
+                           --checklist "Select options:" 22 200 16 ${options[@]} 3>&1 1>&2 2>&3 3>&-)
     local new=0
     local bak=0
     local err=0
@@ -97,7 +99,14 @@ function download {
 	   
         local target=$HOME${i:${#HERE}}
 
-        if [[ -e $target ]] && [[ -e $target.old ]]; then
+        if [[ $target == $HOME ]] || ( [[ -e $target ]] && [[ $(readlink -f $(dirname $target)) != $(dirname $target) ]] ); then
+            err=$((err+1))
+        elif [[ -h $target ]] || [[ ! -e $target  ]]; then
+            $(rm $target)
+            $(mkdir -p $(dirname $target))
+            $(ln -s $i $target)
+            new=$((new+1))
+        elif [[ -e $target ]] && [[ -e $target.old ]]; then
             err=$((err+1))
             dialog --title "Information" --msgbox "Error: Sowohl '$(basename $target)' als auch '$(basename $target.old)' existieren bereits am Zielort! In der Backup-Verwaltung können alte Dateien gelöscht werden." 8 44
         elif [[ -h $target ]]; then
@@ -116,9 +125,6 @@ function download {
             else
                 err=$((err+1))
             fi
-        else
-            $(ln -s $i $target)          
-            new=$((new+1))
         fi
 
     done
@@ -127,15 +133,16 @@ function download {
 }
 function upload {
 
-	local options=$( find $HOME -maxdepth $MAXDEPTH -type f \
-                                                  ! -name '*.old' \
+	local options=$( find $HOME -maxdepth $MAXDEPTH ! -type l \
+                                                  ! -path '*.old*' \
+                                                  ! -name '*.swp' \
                                                   ! -path $HOME'/.config' \
                                                   ! -path $HOME'/.cache' \
                                                   ! -path $HOME'/.ssh*' \
                                                   ! -path $HOME'/.cache*' \
                                                   ! -path $HERE \
                                                   ! -path $HERE'*' \
-                                                  | grep $HOME$REGDOT \
+                                                  | grep -E $HOME'/+\.[^. ][^ ]*' \
                                                   | awk '{print $1, "off"}')
 
 	local choices=$(dialog --no-items \
@@ -148,7 +155,9 @@ function upload {
 	for i in ${choices}; do
 		local target=$HERE${i:${#HOME}}
 
-        if [[ -e $target ]] && [[ -e $target.old ]]; then
+        if [[ $target == $HERE ]]; then
+           break; 
+        elif [[ -e $target ]] && [[ -e $target.old ]]; then
             err=$((err+1))
             dialog --title "Information" --msgbox "Error: Sowohl '$(basename $target)' als auch '$(basename $target.old)' existieren bereits am Zielort! In der Backup-Verwaltung können alte Dateien gelöscht werden." 8 44
         elif [[ -e $target ]]; then
@@ -169,14 +178,14 @@ function upload {
         fi
 
 	done
-	dialog --title "Information" --msgbox "$nw verlinkt.\n$bk gebackuped.\n$er abgebrochen." 8 44
+	dialog --title "Information" --msgbox "$new verlinkt.\n$bak gebackuped.\n$err abgebrochen." 8 44
 }
 function backup {
 	local options=$(find $HOME -maxdepth $MAXDEPTH \
                                -name '*.old' \ 
                              ! -path $HOME'/.cache*' \
                              ! -path $HERE'*' \
-                             | grep $HOME$REGDOT \
+                             | grep -E $HOME$REGDOT \
                              | awk '{print $1, "off"}')
 	
 	local choices=$(dialog --no-items \
@@ -211,7 +220,7 @@ function backup {
    
     done    
 }
-function info{
+function info {
     dialog --title "Information" --msgbox "home (~): $HOME\ndotfiles: $HERE\nmaxdepth: $MAXDEPTH" 8 44
 }
 
