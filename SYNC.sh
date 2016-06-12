@@ -14,14 +14,9 @@ HOME=$( readlink -f ~ )
 #EXECPTIONS=()
 MAXDEPTH=3
 
-WHITESPACE="\ \   "
 REGDOT=/+\.[^. ][^ ]*
 
 
-if [[ $HOME =~ $WHITESPACE ]] || [[  $HERE =~ $WHITESPACE ]]; then
-    echo "Menschen mit Whitespace in ihren Datei-/Ordnernamen verdienen dieses Script nicht!"
-    exit
-fi
 
 # -------------------------------------
 #  METHODS
@@ -64,17 +59,16 @@ function git_push {
 	dialog --title "Information" --msgbox "git push: Fertig!" 6 44
 }
 function download {
-    
-    # Dateien aus $HERE finden
+    IFS=$'\n' 
+    # DATEIEN FINDEN
 	local files=$(find $HERE -maxdepth $MAXDEPTH ! -type l \
-                                                 ! -path '*.git' \
                                                  ! -path $HERE \
                                                  ! -path $HERE'/.git*' \
-                                                 ! -name '*.old' \
+                                                 ! -path '*.old*' \
                                                  ! -name '*.swp' \
-                                                 | grep -E $HERE'/+\.[^. ][^ ]*')
+                                                 | grep -E '^'$HERE'/+\.[^.]\S*$')
 
-	# Überprüfen, ob bereits verlinkt
+	# BEREITS VORHANDENE VERLINKUNG CHECKEN
 	local options=()
     for i in ${files}; do
 
@@ -87,7 +81,7 @@ function download {
 	    fi
 
     done
-
+    unset IFS
     local choices=$(dialog --no-items \
                            --checklist "Select options:" 22 200 16 ${options[@]} 3>&1 1>&2 2>&3 3>&-)
     local new=0
@@ -101,7 +95,7 @@ function download {
 
         if [[ $target == $HOME ]] || ( [[ -e $target ]] && [[ $(readlink -f $(dirname $target)) != $(dirname $target) ]] ); then
             err=$((err+1))
-        elif [[ -h $target ]] || [[ ! -e $target  ]]; then
+        elif [[ -h $target ]]; then
             $(rm $target)
             $(mkdir -p $(dirname $target))
             $(ln -s $i $target)
@@ -109,10 +103,6 @@ function download {
         elif [[ -e $target ]] && [[ -e $target.old ]]; then
             err=$((err+1))
             dialog --title "Information" --msgbox "Error: Sowohl '$(basename $target)' als auch '$(basename $target.old)' existieren bereits am Zielort! In der Backup-Verwaltung können alte Dateien gelöscht werden." 8 44
-        elif [[ -h $target ]]; then
-            $(rm $target)
-            $(ln -s $i $target)          
-            new=$((new+1))
         elif [[ -e $target ]]; then
             if dialog --stdout --title "SYNC.sh" \
                           --backtitle "Aktion erforderlich" \
@@ -125,6 +115,9 @@ function download {
             else
                 err=$((err+1))
             fi
+        else
+            $(ln -s $i $target)
+            new=$((new+1))
         fi
 
     done
