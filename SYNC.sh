@@ -66,7 +66,7 @@ function download {
                                                  ! -path $HERE'/.git*' \
                                                  ! -path '*.old*' \
                                                  ! -name '*.swp' \
-                                                 | grep -E '^'$HERE'/+\.[^.]\S*$')
+                                                 | grep -E '^'$HERE'/+\.[^. ][^ ]*$')
 
 	# BEREITS VORHANDENE VERLINKUNG CHECKEN
 	local options=()
