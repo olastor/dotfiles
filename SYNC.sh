@@ -9,6 +9,8 @@
 #  GLOBAL PARAMETER
 # -------------------------------------
 
+#  !!! ACHTUNG: DIESE VERSION LÖSCHT WOMÖGLICH /HOME !!!
+
 HERE=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 HOME=$( readlink -f ~ )
 #EXECPTIONS=()
