@@ -91,10 +91,10 @@ bindsym $mod+a focus parent
 
 # focus the child container
 #bindsym $mod+d focus child
-
+bindsym $mod+x workspace number 1 www
 # switch to workspace
-bindsym $mod+1 workspace 1
-bindsym $mod+2 workspace 2
+bindsym $mod+1 workspace 1 www; exec (ps -e | grep 'firefox') || firefox
+bindsym $mod+2 workspace 2 dir; exec (ps -e | grep 'pcmanfm') || pcmanfm
 bindsym $mod+3 workspace 3
 bindsym $mod+4 workspace 4
 bindsym $mod+5 workspace 5
@@ -103,6 +103,7 @@ bindsym $mod+7 workspace 7
 bindsym $mod+8 workspace 8
 bindsym $mod+9 workspace 9
 bindsym $mod+0 workspace 10
+
 
 # move focused container to workspace
 bindsym $mod+Shift+1 move container to workspace 1
@@ -124,23 +125,28 @@ bindsym $mod+Shift+r restart
 bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 # -- Begin Customs --
-exec --no-startup-id setxkbmap -option caps:swapescape
-exec --no-startup-id feh --bg-fill --randomize /home/sebastian/Bilder/bg/*
-bindsym $mod+Shift+b exec feh --bg-fill --randomize /home/sebastian/Bilder/bg/*
-exec --no-startup-id xmodmap ~/.xmodmap
 new_window none
 
 gaps inner 5
 gaps outer 10 
 
-bindsym $mod+Control+l exec ~/.config/i3lock-fancy/lock
 
+# Autostart
+exec --no-startup-id setxkbmap -option caps:swapescape
+exec --no-startup-id feh --bg-fill --randomize /home/sebastian/Bilder/bg/*
+bindsym $mod+Shift+b exec feh --bg-fill --randomize /home/sebastian/Bilder/bg/*
+exec --no-startup-id i3-msg workspace 3
+# Lock screen keybind
+bindsym $mod+Control+l exec ~/.i3/i3lock-fancy/lock
+
+# Application shortcuts
 bindsym $mod+F1 exec firefox
 bindsym $mod+F2 exec thunderbird
 bindsym $mod+F3 exec pcmanfm
 bindsym $mod+F4 exec sh -c '"/home/sebastian/Downloads/tor-browser_en-US/Browser/start-tor-browser" --detach || ([ !  -x "/home/sebastian/Downloads/tor-browser_en-US/Browser/start-tor-browser" ] && "$(dirname "$*")"/Browser/start-tor-browser --detach)' dummy %k
 bindsym $mod+F5 exec vlc
 
+# Volume Control (Fn keys)
 bindsym XF86AudioRaiseVolume exec ponymix increase 5
 bindsym XF86AudioLowerVolume exec ponymix decrease 5
 bindsym XF86AudioMute exec ponymix toggle
