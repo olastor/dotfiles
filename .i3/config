@@ -30,7 +30,7 @@ font pango:monospace 8
 floating_modifier $mod
 
 # start a terminal
-bindsym $mod+Return exec i3-sensible-terminal
+bindsym $mod+Return exec xfce4-terminal
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -124,33 +124,44 @@ bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
 bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
-# -- Begin Customs --
+# -- Custom-Style --
+# ------------------
+
+# no window borders
 new_window none
 
+# gaps between windows
 gaps inner 5
 gaps outer 10 
 
 
-# Autostart
+# autostart commands
+# ---
+
 exec --no-startup-id setxkbmap -option caps:swapescape
 exec --no-startup-id feh --bg-fill --randomize /home/sebastian/Bilder/bg/*
-bindsym $mod+Shift+b exec feh --bg-fill --randomize /home/sebastian/Bilder/bg/*
 exec --no-startup-id i3-msg workspace 3
-# Lock screen keybind
+
+# keybinds
+# ---
+
+# application launching
+bindsym $mod+F1 exec pcmanfm
+bindsym $mod+F2 exec vlc
+bindsym $mod+F3 exec thunderbird
+bindsym $mod+F4 exec sh -c '"/home/sebastian/Downloads/tor-browser_en-US/Browser/start-tor-browser" --detach || ([ !  -x "/home/sebastian/Downloads/tor-browser_en-US/Browser/start-tor-browser" ] && "$(dirname "$*")"/Browser/start-tor-browser --detach)' dummy %k
+
+# desktop control
+bindsym $mod+Shift+b exec feh --bg-fill --randomize /home/sebastian/Bilder/bg/*
 bindsym $mod+Control+l exec ~/.i3/i3lock-fancy/lock
 
-# Application shortcuts
-bindsym $mod+F1 exec firefox
-bindsym $mod+F2 exec thunderbird
-bindsym $mod+F3 exec pcmanfm
-bindsym $mod+F4 exec sh -c '"/home/sebastian/Downloads/tor-browser_en-US/Browser/start-tor-browser" --detach || ([ !  -x "/home/sebastian/Downloads/tor-browser_en-US/Browser/start-tor-browser" ] && "$(dirname "$*")"/Browser/start-tor-browser --detach)' dummy %k
-bindsym $mod+F5 exec vlc
-
-# Volume Control (Fn keys)
+# volume control
 bindsym XF86AudioRaiseVolume exec ponymix increase 5
 bindsym XF86AudioLowerVolume exec ponymix decrease 5
 bindsym XF86AudioMute exec ponymix toggle
 
+
+# ---------
 # -- End --
 
 

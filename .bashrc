@@ -1,6 +1,8 @@
-#---------------------------------------------
-# From Manjaro JWM (modified)
-# --------------------------------------------
+# .bashrc
+
+
+
+# Manjaro JWM
 
 if [ -f /etc/bash_completion ]; then
   . /etc/bash_completion
@@ -44,36 +46,42 @@ alias inst="sudo xbps-install -S"
 alias reb="sudo reboot"
 alias pof="sudo poweroff"
 
-# ex - archive extractor
-# usage: ex <file>
-  ex ()
-    {
-      if [ -f $1 ] ; then
-        case $1 in
-          *.tar.bz2)   tar xjf $1   ;;
-          *.tar.gz)    tar xzf $1   ;;
-          *.bz2)       bunzip2 $1   ;;
-          *.rar)       unrar x $1   ;;
-          *.gz)        gunzip $1    ;;
-          *.tar)       tar xf $1    ;;
-          *.tbz2)      tar xjf $1   ;;
-          *.tgz)       tar xzf $1   ;;
-          *.zip)       unzip $1     ;;
-          *.Z)         uncompress $1;;
-          *.7z)        7z x $1      ;;
-          *)           echo "'$1' cannot be extracted via ex()" ;;
-        esac
-      else
-        echo "'$1' is not a valid file"
-      fi
-    }
-#------------------------------------------------------
-# From https://github.com/binarious/dotfiles (modified)
-# -----------------------------------------------------
+# https://github.com/xvoland/Extract/
 
-# @gf3’s Sexy Bash Prompt, inspired by “Extravagant Zsh Prompt”
-# Shamelessly copied from https://github.com/gf3/dotfiles
-# Screenshot: http://i.imgur.com/s0Blh.png
+function extract {
+ if [ -z "$1" ]; then
+    # display usage if no parameters given
+    echo "Usage: extract <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz>"
+ else
+    if [ -f "$1" ] ; then
+        NAME=${1%.*}
+        #mkdir $NAME && cd $NAME
+        case "$1" in
+          *.tar.bz2)   tar xvjf ./"$1"    ;;
+          *.tar.gz)    tar xvzf ./"$1"    ;;
+          *.tar.xz)    tar xvJf ./"$1"    ;;
+          *.lzma)      unlzma ./"$1"      ;;
+          *.bz2)       bunzip2 ./"$1"     ;;
+          *.rar)       unrar x -ad ./"$1" ;;
+          *.gz)        gunzip ./"$1"      ;;
+          *.tar)       tar xvf ./"$1"     ;;
+          *.tbz2)      tar xvjf ./"$1"    ;;
+          *.tgz)       tar xvzf ./"$1"    ;;
+          *.zip)       unzip ./"$1"       ;;
+          *.Z)         uncompress ./"$1"  ;;
+          *.7z)        7z x ./"$1"        ;;
+          *.xz)        unxz ./"$1"        ;;
+          *.exe)       cabextract ./"$1"  ;;
+          *)           echo "extract: '$1' - unknown archive method" ;;
+        esac
+    else
+        echo "'$1' - file does not exist"
+    fi
+fi
+}
+
+
+# https://github.com/binarious/dotfiles
 
 if [[ $COLORTERM = gnome-* && $TERM = xterm ]] && infocmp gnome-256color >/dev/null 2>&1; then
 	export TERM=gnome-256color
@@ -115,14 +123,7 @@ export PURPLE
 export WHITE
 export BOLD
 export RESET
-
-function parse_git_dirty() {
-	[[ $(git status 2> /dev/null | tail -n1) != *"working directory clean"* ]] && echo "*"
-}
-
-function parse_git_branch() {
-	git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e "s/* \(.*\)/\1$(parse_git_dirty)/"
-}
-
-export PS1="\[${BOLD}${MAGENTA}\]\u \[$WHITE\]at \[$ORANGE\]\h \[$WHITE\]in \[$GREEN\]\w \[$RESET\]"
+export PS1="\[${BOLD}${MAGENTA}\]\u \[$WHITE\]at \[$ORANGE\]\h \[$WHITE\]in \[$GREEN\]\w \n\[$WHITE\][\t]\$ \[$RESET\]"
 export PS2="\[$ORANGE\]→ \[$RESET\]"
+export VISUAL="vim"
+export BG="/home/sebastian/Bilder/bg"
