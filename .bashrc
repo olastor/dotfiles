@@ -1,33 +1,38 @@
 # .bashrc
 
-
-
-# Manjaro JWM
-
-if [ -f /etc/bash_completion ]; then
-  . /etc/bash_completion
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
 fi
 
-xhost +local:root > /dev/null 2>&1
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
 
-complete -cf sudo
-
-shopt -s cdspell
-shopt -s checkwinsize
-shopt -s cmdhist
-shopt -s dotglob
-shopt -s expand_aliases
-shopt -s extglob
+# append to the history file, don't overwrite it
 shopt -s histappend
-shopt -s hostcomplete
-shopt -s nocaseglob
 
-export HISTSIZE=10000
-export HISTFILESIZE=${HISTSIZE}
-export HISTCONTROL=ignoreboth
-export BROWSER=/usr/bin/palemoon
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
 
-# Alias system
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
 alias ls='ls --group-directories-first --time-style=+"%d.%m.%Y %H:%M" --color=auto -F'
 alias ll='ls -l --group-directories-first --time-style=+"%d.%m.%Y %H:%M" --color=auto -F'
@@ -39,15 +44,14 @@ alias free='free -m'                      # show sizes in MB
 alias np='nano PKGBUILD'
 
 # Alias custom
-
 alias sudo='sudo '
-alias upd="sudo xbps-install -Syu"
-alias inst="sudo xbps-install -S"
-alias reb="sudo reboot"
-alias pof="sudo poweroff"
+alias upd="sudo apt-get update"
+alias upg="sudo apt-get upgrade"
+alias inst="sudo apt-get install"
+alias reb="reboot"
+alias pof="poweroff"
 
-# https://github.com/xvoland/Extract/
-
+# Extract method (https://github.com/xvoland/Extract/)
 function extract {
  if [ -z "$1" ]; then
     # display usage if no parameters given
@@ -80,50 +84,119 @@ function extract {
 fi
 }
 
-
-# https://github.com/binarious/dotfiles
-
 if [[ $COLORTERM = gnome-* && $TERM = xterm ]] && infocmp gnome-256color >/dev/null 2>&1; then
-	export TERM=gnome-256color
+  export TERM='gnome-256color';
 elif infocmp xterm-256color >/dev/null 2>&1; then
-	export TERM=xterm-256color
-fi
+  export TERM='xterm-256color';
+fi;
+
+prompt_git() {
+  local s='';
+  local branchName='';
+
+  # Check if the current directory is in a Git repository.
+  if [ $(git rev-parse --is-inside-work-tree &>/dev/null; echo "${?}") == '0' ]; then
+
+    # check if the current directory is in .git before running git checks
+    if [ "$(git rev-parse --is-inside-git-dir 2> /dev/null)" == 'false' ]; then
+
+      # Ensure the index is up to date.
+      git update-index --really-refresh -q &>/dev/null;
+
+      # Check for uncommitted changes in the index.
+      if ! $(git diff --quiet --ignore-submodules --cached); then
+        s+='+';
+      fi;
+
+      # Check for unstaged changes.
+      if ! $(git diff-files --quiet --ignore-submodules --); then
+        s+='!';
+      fi;
+
+      # Check for untracked files.
+      if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+        s+='?';
+      fi;
+
+      # Check for stashed files.
+      if $(git rev-parse --verify refs/stash &>/dev/null); then
+        s+='$';
+      fi;
+
+    fi;
+
+    # Get the short symbolic ref.
+    # If HEAD isn’t a symbolic ref, get the short SHA for the latest commit
+    # Otherwise, just give up.
+    branchName="$(git symbolic-ref --quiet --short HEAD 2> /dev/null || \
+      git rev-parse --short HEAD 2> /dev/null || \
+      echo '(unknown)')";
+
+    [ -n "${s}" ] && s=" [${s}]";
+
+    echo -e "${1}${branchName}${2}${s}";
+  else
+    return;
+  fi;
+}
 
 if tput setaf 1 &> /dev/null; then
-	tput sgr0
-	if [[ $(tput colors) -ge 256 ]] 2>/dev/null; then
-		MAGENTA=$(tput setaf 9)
-		ORANGE=$(tput setaf 172)
-		GREEN=$(tput setaf 190)
-		PURPLE=$(tput setaf 141)
-		WHITE=$(tput setaf 0)
-	else
-		MAGENTA=$(tput setaf 5)
-		ORANGE=$(tput setaf 4)
-		GREEN=$(tput setaf 2)
-		PURPLE=$(tput setaf 1)
-		WHITE=$(tput setaf 7)
-	fi
-	BOLD=$(tput bold)
-	RESET=$(tput sgr0)
+  tput sgr0; # reset colors
+  bold=$(tput bold);
+  reset=$(tput sgr0);
+  # Solarized colors, taken from http://git.io/solarized-colors.
+  black=$(tput setaf 0);
+  blue=$(tput setaf 33);
+  cyan=$(tput setaf 37);
+  green=$(tput setaf 64);
+  orange=$(tput setaf 166);
+  purple=$(tput setaf 125);
+  red=$(tput setaf 124);
+  violet=$(tput setaf 61);
+  white=$(tput setaf 15);
+  yellow=$(tput setaf 136);
 else
-	MAGENTA="\033[1;31m"
-	ORANGE="\033[1;33m"
-	GREEN="\033[1;32m"
-	PURPLE="\033[1;35m"
-	WHITE="\033[1;37m"
-	BOLD=""
-	RESET="\033[m"
-fi
+  bold='';
+  reset="\e[0m";
+  black="\e[1;30m";
+  blue="\e[1;34m";
+  cyan="\e[1;36m";
+  green="\e[1;32m";
+  orange="\e[1;33m";
+  purple="\e[1;35m";
+  red="\e[1;31m";
+  violet="\e[1;35m";
+  white="\e[1;37m";
+  yellow="\e[1;33m";
+fi;
 
-export MAGENTA
-export ORANGE
-export GREEN
-export PURPLE
-export WHITE
-export BOLD
-export RESET
-export PS1="\[${BOLD}${MAGENTA}\]\u \[$WHITE\]at \[$ORANGE\]\h \[$WHITE\]in \[$GREEN\]\w \n\[$WHITE\][\t]\$ \[$RESET\]"
-export PS2="\[$ORANGE\]→ \[$RESET\]"
+# Highlight the user name when logged in as root.
+if [[ "${USER}" == "root" ]]; then
+  userStyle="${red}";
+else
+  userStyle="${orange}";
+fi;
+
+# Highlight the hostname when connected via SSH.
+if [[ "${SSH_TTY}" ]]; then
+  hostStyle="${bold}${red}";
+else
+  hostStyle="${yellow}";
+fi;
+
+# Set the terminal title and prompt.
+PS1="\[\033]0;\W\007\]"; # working directory base name
+PS1+="\[${bold}\]\n"; # newline
+PS1+="\[${userStyle}\]\u"; # username
+#PS1+="\[${white}\] at ";
+# PS1+="\[${hostStyle}\]\h"; # host
+PS1+="\[${white}\] in ";
+PS1+="\[${green}\]\w"; # working directory full path
+PS1+="\$(prompt_git \"\[${white}\] on \[${violet}\]\" \"\[${blue}\]\")"; # Git repository details
+PS1+="\n";
+PS1+="\[${white}\]\$ \[${reset}\]"; # `$` (and reset color)
+export PS1;
+
+PS2="\[${yellow}\]→ \[${reset}\]";
+export PS2;
 export VISUAL="vim"
-export BG="/home/sebastian/Bilder/bg"
