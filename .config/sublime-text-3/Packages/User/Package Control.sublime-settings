@@ -1,0 +1,36 @@
+{
+	"bootstrapped": true,
+	"in_process_packages":
+	[
+	],
+	"installed_packages":
+	[
+		"Alignment",
+		"Angular Material Snippets",
+		"apiDoc Autocompletion",
+		"ApiGen",
+		"AutoFileName",
+		"Boxy Theme",
+		"Bracketeer",
+		"BracketHighlighter",
+		"Color Highlighter",
+		"Comment-Snippets",
+		"ConvertToUTF8",
+		"DocBlockr",
+		"Emmet",
+		"Git",
+		"Handlebars",
+		"JsFormat",
+		"JSHint",
+		"LaTeX-cwl",
+		"LaTeXing",
+		"Markdown Preview",
+		"Package Control",
+		"SFTP",
+		"SublimeLinter",
+		"SublimeREPL",
+		"Terminal",
+		"Theme - Soda SolarizedDark",
+		"TypeScript"
+	]
+}
