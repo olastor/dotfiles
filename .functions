@@ -119,3 +119,15 @@ function codepoint() {
 function tre() {
   tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX;
 }
+
+function keepAlive() {
+  xset s off -dpms
+}
+
+function cpstat() {
+  tar c "$1" | pv | tar x -C "$2"
+}
+
+function netscan() {
+  nmap -sP 192.168.2.0/24
+}
