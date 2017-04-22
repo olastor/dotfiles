@@ -119,3 +119,23 @@ function codepoint() {
 function tre() {
   tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX;
 }
+
+function pala() {
+  pandoc "$1" \
+    --from markdown \
+    --to latex \
+    --standalone \
+    --number-sections \
+    --table-of-contents \
+    --variable lang:de \
+    --variable fontsize:12pt \
+    --variable papersize:A4 \
+    --variable linestretch:1.25 \
+    --variable margin-left:2.5cm \
+    --variable margin-right:2.5cm \
+    --variable margin-top:2cm \
+    --variable margin-bottom:2cm \
+    --variable secnumdepth:2 \
+    --variable toc-depth:2 \
+    --output "$(basename -s .md "$1").pdf";
+}
