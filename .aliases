@@ -47,6 +47,6 @@ alias egrep='egrep --color=auto'
 alias sudo='sudo '
 
 # Own stuff
-alias inst='sudo apt install'
+alias inst='sudo apt -y install'
 alias upd='sudo apt -y update'
 alias upg='sudo apt -y update && sudo apt -y upgrade'
