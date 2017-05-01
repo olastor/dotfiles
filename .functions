@@ -128,6 +128,22 @@ function cpstat() {
   tar c "$1" | pv | tar x -C "$2"
 }
 
-function netscan() {
-  nmap -sP 192.168.2.0/24
+function texpaper() {
+  pandoc "$1" \
+    --from markdown \
+    --to latex \
+    --standalone \
+    --number-sections \
+    --table-of-contents \
+    --variable lang:de \
+    --variable fontsize:12pt \
+    --variable papersize:A4 \
+    --variable linestretch:1.25 \
+    --variable margin-left:2.5cm \
+    --variable margin-right:2.5cm \
+    --variable margin-top:2cm \
+    --variable margin-bottom:2cm \
+    --variable secnumdepth:2 \
+    --variable toc-depth:2 \
+    --output "$(basename -s .md "$1").pdf";
 }
