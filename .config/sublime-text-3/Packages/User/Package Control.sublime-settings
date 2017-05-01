@@ -37,22 +37,10 @@
 		"MarkdownEditing",
 		"Package Control",
 		"Python Completions",
-		"SFTP",
 		"SublimeGit",
-		"SublimeLinter",
-		"SublimeLinter-annotations",
-		"SublimeLinter-bandit",
-		"SublimeLinter-chktex",
-		"SublimeLinter-csslint",
-		"SublimeLinter-javac",
-		"SublimeLinter-jscs",
-		"SublimeLinter-jshint",
-		"SublimeLinter-json",
 		"SublimeREPL",
 		"TabsExtra",
 		"Terminal",
-		"Theme - Hero",
-		"Theme - Soda SolarizedDark",
 		"TypeScript"
 	]
 }

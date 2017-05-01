@@ -1,5 +1,4 @@
 {
-	"color_scheme": "Packages/User/SublimeLinter/Hero Dark (SL).tmTheme",
 	"ensure_newline_at_eof_on_save": true,
 	"folder_exclude_patterns":
 	[
@@ -21,7 +20,6 @@
 	],
 	"spell_check": true,
 	"tab_size": 2,
-	"theme": "Hero Dark.sublime-theme",
 	"theme_accent_mono": true,
 	"theme_bar": true,
 	"theme_bar_colored": true,
