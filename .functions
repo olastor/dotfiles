@@ -134,7 +134,6 @@ function texpaper() {
     --to latex \
     --standalone \
     --number-sections \
-    --table-of-contents \
     --variable lang:de \
     --variable fontsize:12pt \
     --variable papersize:A4 \
