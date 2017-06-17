@@ -1,1 +1,5 @@
 # dotfiles
+
+``
+$ scripts/bootstrap
+``
