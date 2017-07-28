@@ -1,0 +1,28 @@
+{
+  "user": {
+    "transformations": {
+      "PDF": {
+        "scope": {
+          "text.html": "html",
+          "text.html.markdown": "markdown"
+        },
+        "pandoc-arguments": [
+          "--to", "latex",
+          "--standalone",
+          "--number-sections",
+          "--variable", "lang:de",
+          "--variable", "fontsize:12pt",
+          "--variable", "papersize:A4",
+          "--variable", "linestretch:1.25",
+          "--variable", "margin-left:2.5cm",
+          "--variable", "margin-right:2.5cm",
+          "--variable", "margin-top:2cm",
+          "--variable", "margin-bottom:2cm",
+          "--variable", "secnumdepth:2",
+          "--variable", "toc-depth:2",
+          "--output", "./output.pdf"
+        ]
+      }
+    }
+  }
+}
