@@ -10,7 +10,7 @@ function add_dotfile {
   echo "!$1" >> .gitignore
 
   # Commit change
-  git add $1 .gitignore
+  git add -f $1 .gitignore
   git commit -m "Added $1"
 }
 
@@ -19,7 +19,7 @@ function rm_dotfile {
   grep -nF $1 .gitignore | cut -f1 -d: | tac | xargs -I{} sed -i "{}d" .gitignore
 
   # Commit change
-  git add $1 .gitignore
+  git add -f $1 .gitignore
   git commit -m "Removed $1"
 }
 
