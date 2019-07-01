@@ -2,6 +2,9 @@
 " hybrid line numbers
 set number relativenumber
 
+" clear search highlight with escape
+" nnoremap <esc> :noh<return><esc>
+
 " shortcut exit
 " fix, see  https://stackoverflow.com/a/7884226
 silent !stty -ixon > /dev/null 2>/dev/null
@@ -20,10 +23,10 @@ inoremap <C-x> <Esc>:x<CR>
 nnoremap <C-t> <esc>:tabnew<CR>
 inoremap <C-t> <esc>:tabnew<CR>
 
-nnoremap <PageUp> <esc>:tabnext<CR>
-inoremap <PageUp> <esc>:tabnext<CR>
-nnoremap <PageDown> <esc>:tabprevious<CR>
-inoremap <PageDown> <esc>:tabprevious<CR>
+nnoremap <C-Right> <esc>:tabnext<CR>
+inoremap <C-Right> <esc>:tabnext<CR>
+nnoremap <C-Left> <esc>:tabprevious<CR>
+inoremap <C-Left> <esc>:tabprevious<CR>
 
 "  no colors
 " syntax off
@@ -52,10 +55,10 @@ Plug 'easymotion/vim-easymotion'
 Plug 'ctrlpvim/ctrlp.vim'
 " Plug 'vim-scripts/project'
 " Plug 'Valloric/YouCompleteMe'
-Plug 'ayu-theme/ayu-vim' " or other package manager
+Plug 'evanram/mandevilla'
 call plug#end()
 
 " coloring
 set termguicolors     " enable true colors support
-let ayucolor="light"  " for light version of theme
-colorscheme ayu
+" let ayucolor="light"  " for light version of theme
+colorscheme mandevilla
