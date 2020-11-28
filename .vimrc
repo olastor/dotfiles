@@ -1,4 +1,5 @@
 
+
 " hybrid line numbers
 set number relativenumber
 
@@ -15,9 +16,9 @@ inoremap <C-q> <Esc>:q<CR>
 nnoremap <C-s> <Esc>:w<CR>
 inoremap <C-s> <Esc>:w<CR>
 
-" shirtcut save + exit
-nnoremap <C-x> <Esc>:x<CR>
-inoremap <C-x> <Esc>:x<CR>
+" shortcut save + exit
+"nnoremap <C-x> <Esc>:x<CR>
+"inoremap <C-x> <Esc>:x<CR>
 
 " tabbing
 nnoremap <C-t> <esc>:tabnew<CR>
@@ -55,10 +56,19 @@ Plug 'easymotion/vim-easymotion'
 Plug 'ctrlpvim/ctrlp.vim'
 " Plug 'vim-scripts/project'
 " Plug 'Valloric/YouCompleteMe'
-Plug 'evanram/mandevilla'
+" Plug 'evanram/mandevilla'
+Plug 'flazz/vim-colorschemes'
+Plug 'chrisbra/Colorizer'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-surround'
 call plug#end()
 
 " coloring
 set termguicolors     " enable true colors support
 " let ayucolor="light"  " for light version of theme
-colorscheme mandevilla
+colorscheme koehler
+
+" airline configs
+let g:airline_powerline_fonts = 1
